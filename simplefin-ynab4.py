@@ -105,31 +105,50 @@ def to_csv(transactions: List[Dict[str, Any]]) -> List[str]:
 
 
 @click.command("import")
-@click.option("--start-time", help="override start time to import transactions form")
-def import_transactions(start_time: str) -> None:
+@click.option("--start-date", help="override start date to import transactions form")
+@click.option("--end-date", help="override end date to import transactions form")
+def import_transactions(start_date: str, end_date: str) -> None:
     if "auth" not in config:
         setup_token = input("Setup Token? ")
         setup(setup_token)
 
-    now = int(time.time())
-
-    if start_time:
-        last_access = int(datetime.datetime(*parse_date(start_time)).timestamp())
+    # parse params
+    if end_date:
+        try:
+            end_time = int(end_date)
+        except RuntimeError:
+            end_time = int(datetime.datetime(*parse_date(end_date)).timestamp())
     else:
-        last_access = int(config["simplefin"]["last_access_time"]) or now - (
+        end_time = int(time.time())
+
+    if start_date:
+        start_time = int(datetime.datetime(*parse_date(start_date)).timestamp())
+    else:
+        start_time = int(config["simplefin"]["last_access_time"]) or end_time - (
             7 * 24 * 60 * 60
         )
 
-    data = get_accounts(start_date=last_access, end_date=now)
+    # cleanup output_dir before we start
+    csv_path = Path.home() / config["ynab"]["output_dir"]
+    for f in csv_path.glob("*.csv"):
+        f.unlink()
+
+    # pull translations
+    data = get_accounts(start_date=start_time, end_date=end_time)
 
     if data.get("errors"):
         raise Exception(data.get("errors"))
 
     count = 0
+    most_recent_ts = 0
     for account in data["accounts"]:
         name = account["name"]
         name = re.sub(r"[^\w\s-]", "", name.lower())
         name = re.sub(r"[-\s]+", "-", name).strip("-_")
+
+        # check if we need to rename file
+        if "rename" in config and name in config["rename"]:
+            name = config["rename"][name]
 
         csv_lines = to_csv(account["transactions"])
         count += len(csv_lines) - 1  # do not count the header
@@ -138,15 +157,25 @@ def import_transactions(start_time: str) -> None:
             # skip accounts with no transactions
             continue
 
+        # update most recent timestamp
+        most_recent_ts = max(
+            [most_recent_ts] + [int(t["posted"]) for t in account["transactions"]]
+        )
+
         csv_path = Path.home() / config["ynab"]["output_dir"] / f"{name}.csv"
         if not csv_path.parent.exists():
             csv_path.parent.mkdir()
         with open(csv_path, "wt") as file:
             file.writelines(csv_lines)
 
-    print(f"{count} transactions downloaded from {ts_to_date(last_access)} to now.")
-    config["simplefin"]["last_access_time"] = str(now)
-    update_config()
+    print(f"{count} transactions downloaded from {ts_to_date(start_time)} to now.")
+
+    if most_recent_ts:
+        print(
+            f"last timestamp seen is {most_recent_ts} ({datetime.datetime.fromtimestamp(most_recent_ts)})"
+        )
+        config["simplefin"]["last_access_time"] = str(most_recent_ts + 1)
+        update_config()
 
 
 if __name__ == "__main__":
