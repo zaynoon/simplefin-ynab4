@@ -8,7 +8,7 @@ pip install requests base64 click humanfriendly
 ```
 
 ## First Run
-the first time you run `simplefin-ynab4` it will ask you for the setup token and store it alongside the simplefin-ynab.py script.
+the first time you run `simplefin-ynab4` it will ask you for the setup token and store the access information in a settings.ini file alongside the simplefin-ynab.py script.
 ```
 > ./simplefin-ynab.py
 Setup Token? 
