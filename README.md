@@ -2,13 +2,13 @@
 simple script to create ynab4 importable csv files from from a simplefin server
 
 ## Requirements
-this script requires the followin gmodules:
+this script requires the following modules:
 ```
 pip install requests base64 click humanfriendly
 ```
 
 ## First Run
-the first time you run `simplefin-ynab4` it will as you for the setup token and store it $HOME/sfin_ynab/settings.ini
+the first time you run `simplefin-ynab4` it will ask you for the setup token and store it alongside the simplefin-ynab.py script.
 ```
 > ./simplefin-ynab.py
 Setup Token? 
@@ -25,10 +25,10 @@ url = https://user:demo@sfin.server.com/simplefin
 last_access_time = 1678731057 
 
 [ynab]
-# wher to save the csv files
+# where to save the csv files
 output_dir = ynab4_import
 
 [rename]
-# rename file names incase simplefin creates poor names for your acounts
+# rename file names in case simplefin creates bad names for your accounts
 some_acct_name = new_acct_name
 ```

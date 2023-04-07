@@ -10,15 +10,11 @@ import configparser
 import click
 from humanfriendly import parse_date
 
-import logging
-
 from typing import Any, List, Tuple, Dict, Optional
-
-logger = logging.getLogger()
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "settings.ini"
-logger.info(f"Using settings file {CONFIG_FILE}")
+print(f"Using settings file {CONFIG_FILE}")
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
