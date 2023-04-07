@@ -10,11 +10,15 @@ import configparser
 import click
 from humanfriendly import parse_date
 
+import logging
 
 from typing import Any, List, Tuple, Dict, Optional
 
-APP_DIR = "sfin_ynab4"
-CONFIG_FILE = Path.home() / APP_DIR / "settings.ini"
+logger = logging.getLogger()
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_FILE = BASE_DIR / "settings.ini"
+logger.info(f"Using settings file {CONFIG_FILE}")
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
