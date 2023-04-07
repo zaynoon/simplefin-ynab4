@@ -27,7 +27,8 @@ def update_config() -> None:
     """
 
     if not CONFIG_FILE.exists():
-        # create missing config
+        
+        # create missing config directory
         if not CONFIG_FILE.parent.exists():
             CONFIG_FILE.parent.mkdir()
 
